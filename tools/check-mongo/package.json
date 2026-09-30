@@ -1,0 +1,16 @@
+{
+  "name": "check-mongo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Phase 0 tool: checks that your MongoDB is reachable, is a replica set, and supports transactions.",
+  "scripts": {
+    "check": "node check.mjs"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "dependencies": {
+    "mongodb": "7.7.0"
+  }
+}
