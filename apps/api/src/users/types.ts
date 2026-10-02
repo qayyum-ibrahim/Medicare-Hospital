@@ -23,8 +23,10 @@ export interface NewUser {
  */
 export interface UserRepo {
   findByEmail(email: string): Promise<UserRecord | null>;
+  findById(id: string): Promise<UserRecord | null>;
   /** Creates the user, or updates name, role, password hash and active flag if the email exists. */
   upsertByEmail(user: NewUser): Promise<{ created: boolean }>;
+  recordLogin(id: string, at: Date): Promise<void>;
   count(): Promise<number>;
 }
 

@@ -10,6 +10,13 @@ export class MemoryUserRepo implements UserRepo {
     return found ? { ...found } : null;
   }
 
+  async findById(id: string): Promise<UserRecord | null> {
+    for (const user of this.byEmail.values()) {
+      if (user.id === id) return { ...user };
+    }
+    return null;
+  }
+
   async upsertByEmail(user: NewUser): Promise<{ created: boolean }> {
     const email = normalizeEmail(user.email);
     const existing = this.byEmail.get(email);
@@ -35,7 +42,20 @@ export class MemoryUserRepo implements UserRepo {
     return { created: true };
   }
 
+  async recordLogin(id: string, at: Date): Promise<void> {
+    for (const [email, user] of this.byEmail) {
+      if (user.id === id) this.byEmail.set(email, { ...user, lastLoginAt: at });
+    }
+  }
+
   async count(): Promise<number> {
     return this.byEmail.size;
+  }
+
+  /** Test helper: switch an account off or on. */
+  setActive(email: string, active: boolean): void {
+    const key = normalizeEmail(email);
+    const user = this.byEmail.get(key);
+    if (user) this.byEmail.set(key, { ...user, active });
   }
 }

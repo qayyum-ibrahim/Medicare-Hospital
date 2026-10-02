@@ -1,9 +1,11 @@
 import express, { type NextFunction, type Request, type Response } from "express";
-import type { DbStatus } from "./db";
+import { createAuthRouter, type AuthDeps } from "./auth/routes";
 import { scrubSecrets } from "./config";
+import type { DbStatus } from "./db";
 
 export interface AppDeps {
   getDbStatus: () => Promise<DbStatus>;
+  auth: AuthDeps;
 }
 
 function httpStatusOf(err: unknown): number {
@@ -35,6 +37,8 @@ export function createApp(deps: AppDeps) {
       replicaSet: db.replicaSet !== null,
     });
   });
+
+  app.use("/auth", createAuthRouter(deps.auth));
 
   app.use((_req, res) => {
     res.status(404).json({ error: { code: "not_found", message: "Not found" } });
