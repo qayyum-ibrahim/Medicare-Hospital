@@ -4,7 +4,7 @@ Every assumption and unknown in this prototype is recorded here. Anything that l
 
 Status key: **Assumed** (my choice, change it if you disagree) / **Illustrative** (a demo number, not a benchmark) / **Verify** (must be checked with the named party before any real use) / **From brief** (you specified it).
 
-Last updated: Phase 0.
+Last updated: Phase 1, step 1.1 complete (shared rules and schemas).
 
 ---
 
@@ -57,13 +57,18 @@ Last updated: Phase 0.
 | ID | Assumption | Status | Verify with |
 |---|---|---|---|
 | D-001 | The EMR is deliberately light: vitals, complaint, ICD-10 diagnosis, prescriptions, orders, results. | From brief | n/a |
-| D-002 | The ICD-10 list is a small subset for demo use. Codes will be checked against the WHO ICD-10 classification before Phase 1 ships. | Verify | WHO ICD-10 |
+| D-002 | The ICD-10 list is a small subset for demo use. Codes will be checked against the WHO ICD-10 classification before they are first used (Phase 3, claims). | Verify | WHO ICD-10 |
 | D-003 | Data is stored as structured, coded fields so it can be mapped to FHIR later. FHIR is not built. | From brief | n/a |
-| D-004 | Duplicate detection uses name + date of birth + phone with fuzzy matching. Score thresholds are illustrative and tunable. | Assumed | Hospital |
+| D-004 | Duplicate detection uses name + date of birth + phone with fuzzy matching. Weights are name 0.50, date of birth 0.35, phone 0.15. Thresholds are likely at 0.85 and possible at 0.65. All are illustrative and tunable. They were checked only against invented test cases, not against real hospital records. | Illustrative | Hospital |
 | D-005 | Family members can share a phone number. A shared phone raises a match hint but is never enough on its own to flag a duplicate. | Assumed | Hospital |
 | D-006 | A newborn is a separate patient record linked to the mother by `motherId`. | Assumed | Hospital |
 | D-007 | Email is optional. | From brief | n/a |
 | D-008 | Phone numbers are stored in E.164 (+234...) and displayed in local format. | Assumed | n/a |
+| D-009 | Phone validation is a **format check only**. It accepts ten digits after +234 starting with 7, 8 or 9 (mobile-style). Landlines and non-Nigerian numbers are rejected in the prototype. I have not checked this against the official Nigerian numbering plan. | Verify | Hospital, telecom regulator |
+| D-010 | Name matching compares names as token sets, so name order does not matter. Tone marks and punctuation are ignored. A very small alias list treats spelling variants of Muhammad and Ibrahim as the same name. The list is deliberately tiny and should grow from real data. | Assumed | Hospital |
+| D-011 | Twins and siblings can share surname, birth date and phone. That combination is capped at "possible" so a person reviews it, never "likely". | Assumed | Hospital |
+| D-012 | Registration needs at least one phone number, unless the record is a newborn linked to the mother. | Assumed | Hospital |
+| D-013 | Sex is recorded as female or male at registration. A date of birth after today's date in Lagos, or before 1900, is rejected. | Assumed | Hospital forms |
 
 ## E. Queue and flow
 
@@ -72,6 +77,9 @@ Last updated: Phase 0.
 | E-001 | Station order: registration, triage, consult, lab, pharmacy, billing. Not every visit uses every station. | From brief | Hospital |
 | E-002 | Illustrative wait targets in minutes: registration 10, triage 15, consult 30, lab 30, pharmacy 15, billing 10. These are demo numbers, not benchmarks. | Illustrative | Hospital |
 | E-003 | Triage priority has three levels: urgent, standard, routine. | Assumed | Hospital |
+| E-004 | Expected queue moves: registration to triage or consult; triage to consult; consult to lab, pharmacy, billing or done; lab back to consult, or on to pharmacy or billing; pharmacy to billing or done; billing to done. Any other move is allowed but needs a written reason and is flagged. | Assumed | Hospital |
+| E-005 | A wait counts as "at risk" from 80 percent of the station target and as a breach when it is over the target. | Illustrative | Hospital |
+| E-006 | Urgent patients are always listed before standard, and standard before routine. Within a priority, the longest wait comes first. | Assumed | Hospital |
 
 ## F. Appointments and messaging
 
@@ -124,8 +132,9 @@ Last updated: Phase 0.
 | J-003 | MongoDB must run as a replica set (needed for multi-document transactions), including in local development. | Assumed |
 | J-004 | Repository ports and adapters, with an in-memory adapter for tests. | Assumed |
 | J-005 | Package versions were read from the npm registry on 30 Sep 2026 and are exact-pinned. | Assumed |
-| J-006 | Zod 4 with `@hookform/resolvers` 5.9.1 and ESLint 10 with typescript-eslint are **unconfirmed pairings** until installed and type-checked. | Verify |
+| J-006 | ESLint 10.11.0 with typescript-eslint 8.71.0 and Zod 4.6.5 (shared schemas) were installed, linted, type-checked and tested together in Phase 1 step 1.1 and work. Zod 4 with `@hookform/resolvers` is still **unconfirmed** until the web app is built. | Verify |
 | J-007 | Pharmacy, claims and Paystack flows are online only. | Assumed |
+| J-008 | npm 11.1.0 crashes with "Cannot read properties of null (reading 'edgesOut')" when installing Vitest 5.0.2. npm 11.21.0 installs it correctly and supports Node 22.9 or newer. npm 12.x declares support only for Node 22.22.2 or newer, so it is not used. I reproduced the crash and confirmed the fix in a Linux sandbox, and the fix was then confirmed on the developer's Mac. I did not identify the upstream bug report. | Assumed |
 
 ## K. Design
 

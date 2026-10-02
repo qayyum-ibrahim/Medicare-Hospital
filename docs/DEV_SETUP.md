@@ -25,6 +25,8 @@ docker --version
 
 Requirement: **Node 22 or newer** (Mongoose 9 needs at least 20.19). If `node -v` shows something older, install a current version from nodejs.org and run the commands again.
 
+Also required: **npm 11.21.0**. npm 11.1.0 crashes when installing Vitest (`Cannot read properties of null (reading 'edgesOut')`). Upgrade with `npm install -g npm@11.21.0` (add `sudo` if you get a permission error), then check with `npm -v`. Do not install npm 12.x: it declares support only for Node 22.22.2 or newer.
+
 ---
 
 ## Step 2: Create the project folder
