@@ -1,0 +1,25 @@
+{
+  "name": "@meridian/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Meridian Care API (Express 5 + Mongoose). Fictional data only.",
+  "scripts": {
+    "dev": "tsx watch --env-file=.env src/server.ts",
+    "start": "tsx --env-file=.env src/server.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "express": "5.2.1",
+    "mongoose": "9.10.3",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.6",
+    "@types/node": "22.20.5",
+    "@types/supertest": "7.2.1",
+    "supertest": "7.3.0",
+    "tsx": "4.23.15"
+  }
+}
