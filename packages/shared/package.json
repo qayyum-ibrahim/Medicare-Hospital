@@ -1,0 +1,14 @@
+{
+  "name": "@meridian/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pure business rules shared by the web app and the API. No I/O.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  }
+}
