@@ -42,3 +42,22 @@ export function redactedHost(uri: string): string {
 export function scrubSecrets(text: string): string {
   return text.replace(/(mongodb(?:\+srv)?:\/\/)[^@\s/]+@/gi, "$1***@");
 }
+
+const missingDemoPassword =
+  "DEMO_PASSWORD is required for seeding. Add DEMO_PASSWORD=... (at least 10 characters) to your .env file.";
+
+const seedEnvSchema = envSchema.extend({
+  DEMO_PASSWORD: z.string(missingDemoPassword).min(10, "DEMO_PASSWORD must be at least 10 characters"),
+});
+
+export type SeedConfig = z.infer<typeof seedEnvSchema>;
+
+/** Like loadConfig, plus the shared password used for the fictional demo accounts. */
+export function loadSeedConfig(env: Record<string, string | undefined> = process.env): SeedConfig {
+  const parsed = seedEnvSchema.safeParse(env);
+  if (!parsed.success) {
+    const problems = parsed.error.issues.map((i) => `  - ${i.path.join(".")}: ${i.message}`).join("\n");
+    throw new Error(`Invalid environment configuration:\n${problems}`);
+  }
+  return parsed.data;
+}
