@@ -1,8 +1,10 @@
 import { createApp } from "./app";
+import { createSessionService } from "./auth/sessions";
 import { createTokenService } from "./auth/tokens";
 import { LoginThrottle } from "./auth/throttle";
 import { loadServerConfig, redactedHost, scrubSecrets } from "./config";
 import { connectDb, dbStatus, disconnectDb } from "./db";
+import { MongoSessionRepo } from "./sessions/mongoSessionRepo";
 import { MongoUserRepo } from "./users/mongoUserRepo";
 
 async function main(): Promise<void> {
@@ -23,6 +25,12 @@ async function main(): Promise<void> {
       users: new MongoUserRepo(),
       tokens: createTokenService(config.JWT_ACCESS_SECRET, { ttlSeconds: config.ACCESS_TOKEN_MINUTES * 60 }),
       throttle: new LoginThrottle({ maxFailures: 5, windowMs: 15 * 60 * 1000 }),
+      sessions: createSessionService({
+        repo: new MongoSessionRepo(),
+        idleMs: config.SESSION_IDLE_MINUTES * 60 * 1000,
+        absoluteMs: config.SESSION_ABSOLUTE_HOURS * 60 * 60 * 1000,
+      }),
+      cookieSecure: config.NODE_ENV === "production",
     },
   });
   const server = app.listen(config.PORT, () => {

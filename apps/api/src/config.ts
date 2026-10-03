@@ -27,6 +27,8 @@ const missingJwtSecret =
 const serverEnvSchema = baseEnvSchema.extend({
   JWT_ACCESS_SECRET: z.string(missingJwtSecret).min(32, "JWT_ACCESS_SECRET must be at least 32 characters"),
   ACCESS_TOKEN_MINUTES: z.coerce.number().int().min(1).max(60).default(15),
+  SESSION_IDLE_MINUTES: z.coerce.number().int().min(1).max(120).default(15),
+  SESSION_ABSOLUTE_HOURS: z.coerce.number().int().min(1).max(72).default(12),
 });
 
 export type Config = z.infer<typeof baseEnvSchema>;
