@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  ACTIONS,
   BREAK_GLASS_ROLES,
   POLICY,
   RESOURCES,
@@ -56,6 +57,16 @@ describe("RBAC policy table", () => {
     }
   });
 
+    it("lists every action the policy uses, and uses every listed action", () => {
+    const used = new Set<string>();
+    for (const resource of RESOURCES) {
+      for (const role of ROLES) {
+        for (const action of POLICY[resource][role].actions) used.add(action);
+      }
+    }
+    expect([...used].sort()).toEqual([...ACTIONS].sort());
+  });
+  
   it("never lets front desk read clinical data", () => {
     for (const resource of ["vitals", "clinicalNotes", "prescriptions", "orders"] as const) {
       expect(canRead("front_desk", resource), resource).toBe(false);

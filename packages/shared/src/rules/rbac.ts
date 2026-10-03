@@ -36,15 +36,17 @@ export type Resource = (typeof RESOURCES)[number];
 
 export type ReadLevel = "none" | "masked" | "limited" | "full";
 
-export type Action =
-  | "write"
-  | "quick_add" // nurse adds injections/consumables
-  | "deposit" // front desk takes a deposit only
-  | "dispense" // pharmacist dispenses
-  | "record_result" // lab records a result
-  | "request" // doctor requests a pre-authorization
-  | "override"; // price override (reason required elsewhere)
+export const ACTIONS = [
+  "write",
+  "quick_add", // nurse adds injections/consumables
+  "deposit", // front desk takes a deposit only
+  "dispense", // pharmacist dispenses
+  "record_result", // lab records a result
+  "request", // doctor requests a pre-authorization
+  "override", // price override (reason required elsewhere)
+] as const;
 
+export type Action = (typeof ACTIONS)[number];
 export interface Grant {
   read: ReadLevel;
   actions: readonly Action[];

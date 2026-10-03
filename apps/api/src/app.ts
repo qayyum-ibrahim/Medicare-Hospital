@@ -1,4 +1,5 @@
 import express, { type NextFunction, type Request, type Response } from "express";
+import { createPermissionsRouter } from "./auth/permissions";
 import { createAuthRouter, type AuthDeps } from "./auth/routes";
 import { scrubSecrets } from "./config";
 import type { DbStatus } from "./db";
@@ -39,7 +40,8 @@ export function createApp(deps: AppDeps) {
   });
 
   app.use("/auth", createAuthRouter(deps.auth));
-
+  app.use("/auth", createPermissionsRouter(deps.auth.tokens));
+  
   app.use((_req, res) => {
     res.status(404).json({ error: { code: "not_found", message: "Not found" } });
   });
