@@ -4,6 +4,7 @@ import { loadServerConfig } from "../src/config";
 const base = {
   MONGODB_URI: "mongodb+srv://bob:hunter2@cluster0.example.mongodb.net/meridian",
   JWT_ACCESS_SECRET: "x".repeat(40),
+  AUDIT_SECRET: "y".repeat(40),
 };
 
 describe("session settings", () => {

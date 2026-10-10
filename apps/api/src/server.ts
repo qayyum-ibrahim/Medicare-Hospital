@@ -1,4 +1,7 @@
 import { createApp } from "./app";
+import { AuditModel } from "./audit/auditModel";
+import { MongoAuditRepo } from "./audit/mongoAuditRepo";
+import { createAuditService } from "./audit/service";
 import { createSessionService } from "./auth/sessions";
 import { createTokenService } from "./auth/tokens";
 import { LoginThrottle } from "./auth/throttle";
@@ -19,6 +22,8 @@ async function main(): Promise<void> {
     console.warn("WARNING: this database is not a replica set, so transactions will not work. See docs/DEV_SETUP.md.");
   }
 
+  await AuditModel.init(); // makes sure the unique sequence index exists before anything is written
+
   const app = createApp({
     getDbStatus: dbStatus,
     auth: {
@@ -30,6 +35,7 @@ async function main(): Promise<void> {
         idleMs: config.SESSION_IDLE_MINUTES * 60 * 1000,
         absoluteMs: config.SESSION_ABSOLUTE_HOURS * 60 * 60 * 1000,
       }),
+      audit: createAuditService({ repo: new MongoAuditRepo(), secret: config.AUDIT_SECRET }),
       cookieSecure: config.NODE_ENV === "production",
     },
   });

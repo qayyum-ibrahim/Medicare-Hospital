@@ -24,8 +24,12 @@ const seedEnvSchema = baseEnvSchema.extend({
 const missingJwtSecret =
   "JWT_ACCESS_SECRET is required. Generate one with: node -e \"console.log(require('crypto').randomBytes(48).toString('base64url'))\"";
 
+const missingAuditSecret =
+  "AUDIT_SECRET is required. Generate one with: node -e \"console.log(require('crypto').randomBytes(48).toString('base64url'))\"";
+  
 const serverEnvSchema = baseEnvSchema.extend({
   JWT_ACCESS_SECRET: z.string(missingJwtSecret).min(32, "JWT_ACCESS_SECRET must be at least 32 characters"),
+  AUDIT_SECRET: z.string(missingAuditSecret).min(32, "AUDIT_SECRET must be at least 32 characters"),
   ACCESS_TOKEN_MINUTES: z.coerce.number().int().min(1).max(60).default(15),
   SESSION_IDLE_MINUTES: z.coerce.number().int().min(1).max(120).default(15),
   SESSION_ABSOLUTE_HOURS: z.coerce.number().int().min(1).max(72).default(12),

@@ -7,12 +7,14 @@ import { DEFAULT_PARAMS, hashPassword, verifyPassword, type ScryptParams } from 
 import type { SessionService } from "./sessions";
 import type { LoginThrottle } from "./throttle";
 import type { TokenService } from "./tokens";
+import type { AuditService } from "../audit/service";
 
 export interface AuthDeps {
   users: UserRepo;
   tokens: TokenService;
   throttle: LoginThrottle;
   sessions: SessionService;
+  audit: AuditService;
   /** Send the refresh cookie only over HTTPS. True in production. */
   cookieSecure: boolean;
   /** Cost used for the decoy hash. Tests pass a cheap one. */
