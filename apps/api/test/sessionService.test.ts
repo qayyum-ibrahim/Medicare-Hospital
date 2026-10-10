@@ -148,6 +148,5 @@ describe("revoke", () => {
 
   it("ignores a token it does not know", async () => {
     const { service } = setup();
-    await expect(service.revoke("nothing")).resolves.toBeUndefined();
-  });
+    await expect(service.revoke("nothing")).resolves.toBeNull();  });
 });

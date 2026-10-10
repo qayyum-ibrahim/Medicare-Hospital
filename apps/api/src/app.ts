@@ -1,5 +1,6 @@
 import express, { type NextFunction, type Request, type Response } from "express";
 import { createAuditRouter } from "./audit/routes";
+import { createGuards } from "./auth/guards";
 import { createPermissionsRouter } from "./auth/permissions";
 import { createAuthRouter, type AuthDeps } from "./auth/routes";
 import { scrubSecrets } from "./config";
@@ -23,6 +24,17 @@ export function createApp(deps: AppDeps) {
   app.disable("x-powered-by");
   app.use(express.json({ limit: "100kb" }));
 
+  // One set of role guards for the whole app. Every refusal is written to the audit log.
+  const guards = createGuards(deps.auth.tokens, (denied) =>
+    deps.auth.audit.recordSafe({
+      actor: denied.actor,
+      action: "access.denied",
+      outcome: "denied",
+      detail: { resource: denied.resource, action: denied.action },
+      ip: denied.ip,
+    }),
+  );
+
   app.get("/health", (_req, res) => {
     res.json({
       status: "ok",
@@ -42,7 +54,7 @@ export function createApp(deps: AppDeps) {
 
   app.use("/auth", createAuthRouter(deps.auth));
   app.use("/auth", createPermissionsRouter(deps.auth.tokens));
-  app.use("/audit-log", createAuditRouter({ tokens: deps.auth.tokens, audit: deps.auth.audit }));
+  app.use("/audit-log", createAuditRouter({ guards, audit: deps.auth.audit }));
 
   app.use((_req, res) => {
     res.status(404).json({ error: { code: "not_found", message: "Not found" } });

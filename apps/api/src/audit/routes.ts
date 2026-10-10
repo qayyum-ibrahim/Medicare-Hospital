@@ -1,14 +1,13 @@
 import { AUDIT_ACTIONS, AUDIT_OUTCOMES } from "@meridian/shared";
 import { Router } from "express";
 import { z } from "zod";
-import { createGuards } from "../auth/guards";
+import type { Guards } from "../auth/guards";
 import { getAuth } from "../auth/middleware";
-import type { TokenService } from "../auth/tokens";
+import type { AuditService } from "./service";
 import type { AuditEntry } from "./types";
-import type { AuditService } from "../audit/service";
 
 export interface AuditRouterDeps {
-  tokens: TokenService;
+  guards: Guards;
   audit: AuditService;
 }
 
@@ -45,7 +44,7 @@ function toApi(entry: AuditEntry) {
  */
 export function createAuditRouter(deps: AuditRouterDeps): Router {
   const router = Router();
-  const guards = createGuards(deps.tokens);
+  const { guards } = deps;
 
   router.get("/", guards.requireRead("auditLog"), async (req, res) => {
     const parsed = listQuerySchema.safeParse(req.query);

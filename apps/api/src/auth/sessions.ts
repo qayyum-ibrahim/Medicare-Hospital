@@ -22,8 +22,11 @@ export type RotateResult =
 export interface SessionService {
   start(userId: string): Promise<{ refreshToken: string; expiresAt: Date }>;
   rotate(presentedToken: string): Promise<RotateResult>;
-  /** Ends the session the token belongs to. Does nothing if the token is unknown. */
-  revoke(presentedToken: string): Promise<void>;
+  /**
+   * Ends the session the token belongs to. Returns whose session it was, or null if the token is
+   * unknown or the session had already ended (so repeating a logout reports nothing new).
+   */
+  revoke(presentedToken: string): Promise<{ userId: string; sessionId: string } | null>;
 }
 
 export interface SessionServiceOptions {
@@ -95,7 +98,9 @@ export function createSessionService(options: SessionServiceOptions): SessionSer
 
     async revoke(presentedToken) {
       const found = await repo.findByHash(hashToken(presentedToken));
-      if (found) await repo.revoke(found.session.id, clock());
+      if (!found || found.session.revokedAt) return null;
+      await repo.revoke(found.session.id, clock());
+      return { userId: found.session.userId, sessionId: found.session.id };
     },
   };
 }

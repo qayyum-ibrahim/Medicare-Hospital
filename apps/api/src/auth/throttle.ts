@@ -32,11 +32,19 @@ export class LoginThrottle {
     return { allowed: false, retryAfterSeconds: Math.max(1, Math.ceil(remainingMs / 1000)) };
   }
 
-  recordFailure(key: string): void {
+  /** justLocked is true only for the failure that reaches the limit, so a lockout can be logged once. */
+  recordFailure(key: string): { failures: number; justLocked: boolean } {
     const entry = this.live(key);
-    if (entry) entry.failures++;
-    else this.entries.set(key, { failures: 1, windowStart: this.now() });
+    let failures: number;
+    if (entry) {
+      entry.failures++;
+      failures = entry.failures;
+    } else {
+      this.entries.set(key, { failures: 1, windowStart: this.now() });
+      failures = 1;
+    }
     this.prune();
+    return { failures, justLocked: failures === this.options.maxFailures };
   }
 
   recordSuccess(key: string): void {
