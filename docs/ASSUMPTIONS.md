@@ -4,7 +4,7 @@ Every assumption and unknown in this prototype is recorded here. Anything that l
 
 Status key: **Assumed** (my choice, change it if you disagree) / **Illustrative** (a demo number, not a benchmark) / **Verify** (must be checked with the named party before any real use) / **From brief** (you specified it).
 
-Last updated: Phase 1, step 1.1 complete (shared rules and schemas).
+Last updated: Phase 1, step 1.2 complete (API: accounts, login, sessions, role guards, audit log).
 
 ---
 
@@ -122,6 +122,14 @@ Last updated: Phase 1, step 1.1 complete (shared rules and schemas).
 | I-006 | Identifiers (phone, member number, MRN) are masked by default for roles that do not need them in full. | From brief | Hospital |
 | I-007 | Consent text is versioned. The consent wording is placeholder text, not legal text. | Verify | Legal counsel |
 | I-008 | A persistent "Demo: fictional data only" banner is always visible. No real patient data is ever used. | From brief | n/a |
+| I-009 | Passwords are hashed with scrypt (Node built-in) at N=2^15, r=8, p=3, with the cost stored inside each hash. As far as I remember this matches one of the equivalent scrypt settings in the OWASP password storage guidance. I have not re-checked it against the current guidance. Argon2 is generally listed first but needs a native add-on. | Verify | OWASP guidance, security review |
+| I-010 | Access tokens are stateless and last 15 minutes. A changed role or a switched-off account is noticed at the next refresh or at `/auth/me`, not instantly on other routes. | Assumed | Hospital |
+| I-011 | The sign-in lockout (5 failures per address and email in 15 minutes) is kept in server memory. It resets on restart and only works for a single server process. | Assumed | Security review |
+| I-012 | A session ends after 15 minutes idle or 12 hours absolute (settings `SESSION_IDLE_MINUTES`, `SESSION_ABSOLUTE_HOURS`). Idle time is measured between refreshes, so the web app must refresh only while the person is active and keep its own idle timer. A replaced refresh token is tolerated for 10 seconds (two browser tabs racing), and reuse after that revokes the session. Only the immediately previous token is remembered. | Illustrative | Hospital |
+| I-013 | The audit log is a chain of keyed hashes (HMAC) using the server secret `AUDIT_SECRET`, which is not stored in the database. If that secret is lost or changed, the existing log can no longer be verified. Entries removed from the very end of the log are not detected unless the head (sequence number and hash) is recorded elsewhere. Someone with both database access and the secret could forge the log. | Assumed | Security review |
+| I-014 | Audit policy: sign-in, logout, lockout, token-reuse and refusal events use a write that never blocks the action (a failure is logged to the server console). Reading the audit log refuses to proceed if its own entry cannot be written. Reading clinical data will do the same. Failed sign-ins never store the email or password typed. A lockout is logged once, when it starts. Requests with no valid token are not logged as refusals. A signed-in account that keeps probing writes one entry per refusal and is not rate limited. The `detail` field must hold only small facts (counts, resource names), never names, phone numbers or clinical text; this is enforced by convention, not by code. | Assumed | Hospital, legal counsel |
+| I-015 | All seven fictional demo accounts share one password, `DEMO_PASSWORD` from the private `.env`, so anyone running the demo can sign in as each role. It is a demo secret, not a security control. | Assumed | n/a |
+| I-016 | Cross-site request protection for refresh and logout is the SameSite=Strict cookie plus a required `X-Meridian-Client: web` header. The cookie is marked Secure only when `NODE_ENV=production`. Cross-origin (CORS) settings that allow the cookie are not configured yet. | Assumed | Security review |
 
 ## J. Technology decisions
 
@@ -135,6 +143,10 @@ Last updated: Phase 1, step 1.1 complete (shared rules and schemas).
 | J-006 | ESLint 10.11.0 with typescript-eslint 8.71.0 and Zod 4.6.5 (shared schemas) were installed, linted, type-checked and tested together in Phase 1 step 1.1 and work. Zod 4 with `@hookform/resolvers` is still **unconfirmed** until the web app is built. | Verify |
 | J-007 | Pharmacy, claims and Paystack flows are online only. | Assumed |
 | J-008 | npm 11.1.0 crashes with "Cannot read properties of null (reading 'edgesOut')" when installing Vitest 5.0.2. npm 11.21.0 installs it correctly and supports Node 22.9 or newer. npm 12.x declares support only for Node 22.22.2 or newer, so it is not used. I reproduced the crash and confirmed the fix in a Linux sandbox, and the fix was then confirmed on the developer's Mac. I did not identify the upstream bug report. | Assumed |
+| J-009 | The API runs TypeScript directly with tsx (no build step) and has no production deployment configuration. Express 5.2.1, Mongoose 9.10.3, jose 6.2.12 (tokens), tsx 4.23.15, supertest 7.3.0. | Assumed |
+| J-010 | Business logic is tested with in-memory adapters. The MongoDB adapters have no automated tests and were verified by running the real app against the developer's Atlas cluster: users, sessions and the audit log (including the unique sequence index, the atomic token swap and tamper detection). | Assumed |
+| J-011 | The developer's Atlas cluster allows network access from anywhere so the demo can run from any location. Protection is the database username and password only. A dedicated database user limited to the `meridian` database is recommended. This was not verified. | Verify |
+| J-012 | Package install order for a new workspace: run a plain `npm install` first, then `npm install -w <workspace> ...`. Otherwise npm silently ignores the workspace flag. | Assumed |
 
 ## K. Design
 

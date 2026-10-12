@@ -9,11 +9,12 @@ A demo-ready prototype of a revenue-cycle and patient-flow web app for a **ficti
 | Phase | Scope | State |
 |---|---|---|
 | 0 | Plan, assumptions, dev setup | done |
-| 1 | Auth, roles, audit, registration, duplicates, queue | in progress (1.1 done, 1.2 next) |
+| 1 | Auth, roles, audit, registration, duplicates, queue | in progress (1.1 shared rules and 1.2 API security done; 1.3 patients and registration next) |
 | 2-8 | see `docs/PHASE0_PLAN.md`, section 12 | not started |
 
 ## Start here
 
+0. `docs/STATUS.md` for where the project stands and what is next
 1. `docs/DEV_SETUP.md` to prepare your machine
 2. `docs/PHASE0_PLAN.md` for the architecture and roadmap
 3. `docs/ASSUMPTIONS.md` for every assumption and unknown
